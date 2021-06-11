@@ -1,12 +1,34 @@
-import React from 'react'
-  
+import React,{useState,useEffect} from 'react'
+import {BrowserRouter} from "react-router-dom"
+import NavBar from './components/NavBar'
+import Typography from "@material-ui/core/Typography"
+import { Container } from '@material-ui/core'
+ 
+const App = (props) => {
+  const [userLoggedIn, setUserLoggedIn] = useState(false)
 
-function App(){
+  const handleAuth = () => {
+    setUserLoggedIn(!userLoggedIn)
+  }
+
+  useEffect(() => {
+    if(localStorage.getItem('token')) {
+      handleAuth()
+    }
+  }, [])
 
   return (
-    <div >
-      <h1> Billing Application</h1>
-    </div>
+    <Container>
+      <Typography 
+            variant = "h2"
+            color = "secondary"
+            align = "center"
+      >
+         Welcome to Billing </Typography>
+      <BrowserRouter>
+            <NavBar userLoggedIn={userLoggedIn} handleAuth= {handleAuth} />
+      </BrowserRouter>
+    </Container>
   )
 }
 

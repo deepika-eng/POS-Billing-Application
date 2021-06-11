@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import validator from 'validator' 
 import {startRegisterUsers} from '../actions/usersAction'
 import {useSelector,useDispatch} from 'react-redux'
+import Typogrphy from "@material-ui/core/Typography"
 
 const Register = (props) => {
     const [ username, setUsername ] = useState('')
@@ -86,7 +87,8 @@ const Register = (props) => {
 
     return (
         <div>
-           <h2> Register with us</h2>
+           <Typogrphy 
+            variant = "h5" > Register with us</Typogrphy> 
            <form onSubmit={handleSubmit} >
                <input
                     type = "text"
@@ -138,7 +140,6 @@ const Register = (props) => {
                  <br/>
                  <input type = "submit" />
            </form>
-           <p>alredy registered ? </p>
         </div>
     )
 }
