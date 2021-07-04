@@ -1,17 +1,18 @@
-import {createStore, combineReducers, applyMiddleware} from 'redux'
-import thunk from "redux-thunk"
+import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import usersReducer from '../reducers/usersReducers'
-import billingReducer from '../reducers/billingReducers'
-
-
+import thunk from 'redux-thunk'
+import billingReducer from '../reducers/billingReducer'
+import userAuthReducer from '../reducers/userAuthReducer'
 
 const configureStore = () => {
-    const store = createStore (combineReducers({
-        users : usersReducer,
-        bill : billingReducer
-    }),composeWithDevTools(applyMiddleware(thunk)))
-    return store 
+	const store = createStore(
+		combineReducers({
+			userAuth: userAuthReducer,
+			bill: billingReducer,
+		}),
+		composeWithDevTools(applyMiddleware(thunk))
+	)
+	return store
 }
 
-export default configureStore 
+export default configureStore

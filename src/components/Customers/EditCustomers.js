@@ -3,7 +3,10 @@ import { useFormik } from 'formik'
 import * as yup from 'yup'
 import { makeStyles, Button, TextField, Typography } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { startAddCustomers } from '../../actions/customerAction'
+import {
+	clearCustData,
+	startEditCustomerData,
+} from '../../actions/customerAction'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -22,23 +25,24 @@ const useStyles = makeStyles((theme) => ({
 	},
 }))
 
-const AddCustomers = (props) => {
-	const dispatch = useDispatch()
-
+const EditCustomers = (props) => {
 	const classes = useStyles()
 
+	const { handleToggle, _id, name, mobile, email } = props
+
+	const dispatch = useDispatch()
+
 	const initialValues = {
-		name: '',
-		mobile: '',
-		email: '',
+		name: name,
+		mobile: mobile,
+		email: email,
 	}
 
 	const validationSchema = yup.object({
 		name: yup.string('Enter Customer Name').required('Customer name is required'),
 		mobile: yup
 			.number('Enter only Number')
-			.min(1000000000, 'Invalid Phone Number')
-			.max(9999999999, 'Please enter valid number')
+			.min(10, 'Please enter 10 digits')
 			.required('Mobile number is required'),
 		email: yup
 			.string('Enter your email')
@@ -47,8 +51,9 @@ const AddCustomers = (props) => {
 	})
 
 	const onSubmit = (values, onSubmitProps) => {
-		dispatch(startAddCustomers(values))
+		dispatch(startEditCustomerData(_id, values))
 		onSubmitProps.resetForm()
+		handleToggle(false)
 	}
 
 	const formik = useFormik({
@@ -98,16 +103,28 @@ const AddCustomers = (props) => {
 					error={formik.touched.email && Boolean(formik.errors.email)}
 					helperText={formik.touched.email && formik.errors.email}
 				/>
+
 				<Button
 					className={classes.button}
 					color='primary'
 					variant='contained'
 					type='submit'>
-					<Typography variant='h6'>Add</Typography>
+					<Typography variant='h6'> Update</Typography>
+				</Button>
+				<Button
+					className={classes.button}
+					color='secondary'
+					variant='contained'
+					type='submit'
+					onClick={() => {
+						handleToggle(false)
+						dispatch(clearCustData())
+					}}>
+					<Typography variant='h6'>Cancel</Typography>
 				</Button>
 			</form>
 		</div>
 	)
 }
 
-export default AddCustomers
+export default EditCustomers

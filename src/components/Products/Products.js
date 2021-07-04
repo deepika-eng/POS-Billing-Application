@@ -1,32 +1,32 @@
-import React, {useState, useEffect} from 'react'
-import {useSelector, useDispatch} from 'react-redux'
-import {startGetProductData} from "../../actions/billingAction"
-import AddProducts from "./AddProducts"
-import ProductList from "./ProductList"
+import { Typography } from '@material-ui/core'
+import React, { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { startGetProductData } from '../../actions/productAction'
+import AddProducts from './AddProducts'
+import EditProducts from './editProducts'
+import ProductsList from './ProductsList'
 
-const Product = (props) => {
-    const [toggle, setToggle] = useState(false)
-    const productsData = useSelector((state) => {
-        return state.bill.productsData
-    })
-    const dispatch = useDispatch()
+const Products = () => {
+	const [toggle, setToggle] = useState(false)
 
+	const dispatch = useDispatch()
 
-    const handleToggle = (value) => {
-        setToggle(value)
-    }
+	const handleToggle = (value) => {
+		setToggle(value)
+	}
 
-    const handleEdit = (id) => {
-        handleToggle(true)
-        dispatch(startGetProductData(id))
-    }
+	const handleEdit = (id) => {
+		handleToggle(true)
+		dispatch(startGetProductData(id))
+	}
 
-    return(
-        <div>
-            {toggle ? (
+	const productsData = useSelector((state) => state.bill.productsData)
+	return (
+		<div>
+			{toggle && Object.keys(productsData).length > 0 ? (
 				<div>
-					<h1>Edit Product</h1>
-					<AddProducts
+					<Typography variant='h3'>Edit Product</Typography>
+					<EditProducts
 						toggle={toggle}
 						handleToggle={handleToggle}
 						{...productsData}
@@ -34,15 +34,15 @@ const Product = (props) => {
 				</div>
 			) : (
 				<div>
-					<h1>Add Products</h1>
+					<Typography variant='h3'>Add Products</Typography>
 					<AddProducts />
 				</div>
 			)}
 
 			<hr />
-			<ProductList handleEdit={handleEdit} />
-        </div>
-    )
+			<ProductsList handleEdit={handleEdit} />
+		</div>
+	)
 }
 
-export default Product
+export default Products

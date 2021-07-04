@@ -1,186 +1,233 @@
-import React, {useEffect} from 'react'
-import {useSelector, useDispatch} from 'react-redux'
-import 'bootstrap/dist/css/bootstrap.css'
-import {startGetCustomers, startGetProducts} from '../../actions/billingAction'
+import React from 'react'
+import { useSelector } from 'react-redux'
+import _ from 'lodash'
+import moment from 'moment'
+
+import {
+	makeStyles,
+	CssBaseline,
+	Paper,
+	Button,
+	Link,
+	Typography,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	Grid,
+} from '@material-ui/core'
+import html2pdf from 'html2pdf.js'
+
+const useStyles = makeStyles((theme) => ({
+	layout: {
+		height: '100vh',
+		overflowX: 'auto',
+		width: 'auto',
+		marginLeft: theme.spacing(2),
+		marginRight: theme.spacing(2),
+		[theme.breakpoints.up(600 + theme.spacing(2) * 2)]: {
+			width: 600,
+			marginLeft: 'auto',
+			marginRight: 'auto',
+		},
+	},
+	paper: {
+		marginTop: theme.spacing(1),
+		marginBottom: theme.spacing(3),
+		padding: theme.spacing(2),
+		[theme.breakpoints.up(600 + theme.spacing(3) * 2)]: {
+			marginTop: theme.spacing(1),
+			marginBottom: theme.spacing(6),
+			padding: theme.spacing(3),
+		},
+	},
+	listItem: {
+		padding: theme.spacing(1, 0),
+	},
+	total: {
+		fontWeight: 700,
+	},
+	title: {
+		marginTop: theme.spacing(2),
+	},
+	buttons: {
+		display: 'flex',
+		justifyContent: 'flex-end',
+	},
+	button: {
+		marginTop: theme.spacing(3),
+		marginLeft: theme.spacing(1),
+	},
+}))
 
 const Invoice = (props) => {
-    const {handleToggle} = props
-    const dispatch = useDispatch()
+	const classes = useStyles()
+	const { handleToggle } = props
 
-    const billData = useSelector((state) => {
-        return state.bill.billCustomerData
-    })
-    console.log('billdata', billData)
+	const stateValue = useSelector((state) => state.bill)
+	const billData = useSelector((state) => state.bill.billData)
+	const userData = useSelector((state) => state.userAuth.profile)
 
-    const customer = useSelector((state) => {
-        return state.bill.customers 
-    })
+	const products = stateValue.products
+	const customer = stateValue.customers
 
-    const product = useSelector((state) => {
-        return state.bill.products
-    })
+	const customerName = _.find(customer, { _id: billData.customer })
 
-    useEffect(()=>{
-        dispatch(startGetProducts())
-        dispatch(startGetCustomers())
-        
-    },[])
+	const handleInvoiceDownload = () => {
+		var opt = {
+			margin: 0,
+			html2canvas: { scale: 3 },
+			jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+		}
+		let invoice = document.getElementById('invoice')
+		html2pdf()
+			.from(invoice)
+			.set(opt)
+			.save(`Bill-${customerName.name}-${moment(billData.createdAt).format('l')}`)
+	}
 
-    const customerName = customer.find((ele) => {
-        if(ele._id === billData.customer){
-            return ele
-        }
-    })
+	return (
+		<div>
+			<React.Fragment>
+				<CssBaseline />
+				<Grid container spacing={10} style={{ marginTop: '20px' }}>
+					<Grid item xs={5}>
+						<Button
+							style={{ marginLeft: '20%' }}
+							variant='contained'
+							color='secondary'
+							align='right'
+							onClick={() => {
+								handleToggle(false)
+							}}>
+							&times;
+						</Button>
+					</Grid>
+					<Grid item xs={5}>
+						<Button
+							onClick={handleInvoiceDownload}
+							variant='contained'
+							style={{
+								backgroundColor: 'green',
+								color: 'white',
+								marginBottom: '1em',
+							}}>
+							Download
+						</Button>
+					</Grid>
+				</Grid>
+				<main className={classes.layout}>
+					<Paper className={classes.paper} id='invoice'>
+						<Typography
+							gutterBottom
+							component='h1'
+							variant='h4'
+							align='center'
+							className={classes.title}>
+							{userData.businessName.toUpperCase()}
+						</Typography>
+						<Typography>
+							Date : {moment(billData.createdAt).format('MMMM Do YYYY')}
+						</Typography>
 
-    const lineItems = billData.lineItems 
+						<Typography gutterBottom component='h1' variant='h4' align='center'>
+							Invoice
+						</Typography>
 
-    return(
-        <div>
-            <h1>invoice</h1>
-            <div class="receipt-content">
-                <div class="container bootstrap snippets bootdey">
-                    <div class="row">
-			            <div class="col-md-12">
-				            <div class="invoice-wrapper">
-					            <div class="intro">
-                                    
-                                      Hi <strong>{customerName.name}</strong>, 
-                                    <br/>
-                                    This is the receipt for a payment of <strong>Rs-{billData.total}</strong> for your works
-                                </div>
-                                <div class="payment-info">
-						            <div class="row">
-                                        <div class="col-sm-6">
-                                            <span>Invoice No.</span>
-                                            <strong>{billData._id}</strong>
-                                        </div>
-                                        <div class="col-sm-6 text-right">
-                                            <span>Payment Date</span>
-                                            <strong>{billData.date.slice(0,10)}</strong>
-                                        </div>
-                                    </div>
-                                </div>
+						<Grid item container direction='column' xs={12}>
+							<Grid container spacing={10}>
+								<Grid align='justify' item xs={12} sm={6}>
+									<Typography variant='h6' className={classes.title}>
+										Employee Details
+									</Typography>
+									<Typography className={classes.title}>
+										Name:
+										{userData.username[0].toUpperCase() + userData.username.slice(1)}
+									</Typography>
+									<Typography className={classes.title}>
+										Email:
+										{userData.email}
+									</Typography>
+								</Grid>
 
-                                <div class="line-items">
-						{/* <div class="headers clearfix">
-							<div class="row">
-								<div class="col-xs-4">Description</div>
-								<div class="col-xs-3">Quantity</div>
-								<div class="col-xs-5 text-right">Amount</div>
-							</div>
-						</div>
-						
-                            {lineItems.map((ele)=>{
-                                return(
-                                <div>
-                                    <div class="items">
-							        <div class="row item">
-                                    {product.map((data)=>{
-                                        return (
-                                        ele.product === data._id && (
-                                        <div class="col-xs-4 desc">
-                                         {data.name}   
-                                        </div> 
-                                         )
-                                      )
-                                    })}
-                                   
-								<div class="col-xs-3 qty">
-									{ele.quantity}
-								</div>
-								<div class="col-xs-5 amount text-right">
-									{ele.subTotal}
-								</div>
-                                </div>
-                                </div>
-						        </div>
-                                )
-                            })}
-								 */}
-							
-                             <div class="headers clearfix">
-							{/* <div class="row">
-								<div class="col-xs-4">Description</div>
-								<div class="col-xs-3">Quantity</div>
-								<div class="col-xs-5 text-right">Amount</div>
-							</div> */}
-						</div>
-						
-                            {lineItems.map((ele)=>{
-                                return(
-                                <div>
-                                    <div class="items">
-							        <div class="row item">
-                                    {product.map((data)=>{
-                                        return (
-                                        ele.product === data._id && (
-                                            <div>
-                                        <div class="col-xs-4 desc">
-                                        Description - {data.name}  
-                                       
-                                        </div> 
-                                        <div class="col-xs-5 amount text-right">
-                                        Price - {data.price} 
-                                        </div>
-                                        </div>
-                                         )
-                                      )
-                                    })}
-                                   
-								<div class="col-xs-3 qty">
-                                Quantity - {ele.quantity}
-								</div>
-								<div class="col-xs-5 amount text-right">
-								Amount - {ele.subTotal}
-								</div>
-                                </div>
-                                </div>
-						        </div>
-                                )
-                            })}
-								 
-						
-						<div class="total text-right">
-							<p class="extra-notes">
-								<strong>Extra Notes</strong>
-								Please send all items at the same time to shipping address by next week.
-								Thanks a lot.
-							</p>
-							<div class="field">
-								Subtotal <span>{billData.total}</span>
-							</div>
-							<div class="field">
-								Shipping <span>0.00</span>
-							</div>
-							{/* <div class="field">
-								Discount <span>4.5%</span>
-							</div> */}
-							<div class="field grand-total">
-								Total <span>{billData.total}</span>
-							</div>
-						</div>
+								<Grid item container direction='column' align='justify' xs={12} sm={5}>
+									<Typography variant='h6' className={classes.title}>
+										Customer Details
+									</Typography>
+									<Typography className={classes.title}>
+										Name:{customerName.name[0].toUpperCase() + customerName.name.slice(1)}
+									</Typography>
+									<Typography className={classes.title}>
+										Mobile:
+										{customerName.mobile}
+									</Typography>
+								</Grid>
+							</Grid>
+							<Grid container spacing={2}>
+								<Grid item xs={12} sm={6}>
+									<Typography gutterBottom></Typography>
+								</Grid>
+							</Grid>
+						</Grid>
 
-						<div class="print">
-							<a href="#">
-								<i class="fa fa-print"></i>
-								Print this receipt
-							</a>
-						</div>
-					</div>
-				</div>
+						<Typography variant='h6' gutterBottom align='center'>
+							Order summary
+						</Typography>
+						<Table>
+							<TableHead>
+								<TableRow>
+									<TableCell>SL.No</TableCell>
+									<TableCell>Product</TableCell>
+									<TableCell>Price</TableCell>
+									<TableCell>Quantity</TableCell>
+									<TableCell>SubTotal</TableCell>
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								{billData.lineItems.map((item, i) => {
+									return (
+										<TableRow key={item._id}>
+											<TableCell>{i + 1}</TableCell>
+											{products.map((ele) => {
+												if (ele._id === item.product) {
+													return (
+														<TableCell>
+															{ele.name[0].toUpperCase() + ele.name.slice(1)}
+														</TableCell>
+													)
+												}
+											})}
 
-				<div class="footer">
-					Copyright © 2021. pos billing
-                            </div>
-                            <button onClick = {() => {
-                                handleToggle(false)
-                            }} >close</button>
-                        </div>
-                    </div>            
-                 </div>
-            </div>
-        </div>
-    )
+											<TableCell>{item.price}</TableCell>
+											<TableCell>{item.quantity}</TableCell>
+											<TableCell>{item.subTotal}</TableCell>
+										</TableRow>
+									)
+								})}
+							</TableBody>
+						</Table>
+						<Typography
+							gutterBottom
+							align='right'
+							variant='subtitle1'
+							className={classes.total}>
+							Total : Rs.{billData.total}
+						</Typography>
+
+						<Typography variant='body2' color='textSecondary' align='center'>
+							{'Copyright © '}
+							<Link color='inherit' href='#'>
+								{userData.businessName}
+							</Link>{' '}
+							{new Date().getFullYear()}
+							{'.'}
+						</Typography>
+					</Paper>
+				</main>
+			</React.Fragment>
+		</div>
+	)
 }
 
 export default Invoice

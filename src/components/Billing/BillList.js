@@ -1,76 +1,127 @@
 import React, { useEffect } from 'react'
-import {useSelector, useDispatch} from "react-redux"
-import {startGetBill, startDeleteBill, startGetBillData} from '../../actions/billingAction'
+import { useSelector, useDispatch } from 'react-redux'
+import {
+	makeStyles,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	Button,
+	Typography,
+} from '@material-ui/core'
+import _ from 'lodash'
+import {
+	startDeleteBill,
+	startGetBillData,
+	startGetBills,
+} from '../../actions/billingAction'
+import swal from 'sweetalert'
+
+const useStyles = makeStyles({
+	table: {
+		minWidth: 550,
+	},
+})
 
 const BillList = (props) => {
-    const {handleInvoice} = props 
-    const dispatch = useDispatch()
+	const { handleInvoice } = props
+	const dispatch = useDispatch()
+	const classes = useStyles()
 
-    const billing = useSelector((state) => {
-        return state.bill.bills
-    })
-    console.log("billing", billing)
+	useEffect(() => {
+		dispatch(startGetBills())
+	}, [])
 
-    const customers = useSelector((state) => {
-        return state.bill.customers
-    })
+	const billsData = useSelector((state) => state.bill)
+	const bills = billsData.bills
+	const sortedBills = _.orderBy(bills, ['createdAt'], ['desc'])
 
-    const customerData = useSelector((state) => {
-        return state.bill.customersData 
-    })
-    console.log("customer data", customerData)
+	const customerData = billsData.customers
 
-    useEffect(() => {
-       dispatch(startGetBill()) 
-    },[])
+	const handleDelete = (id) => {
+		swal({
+			title: 'Are you sure?',
+			text: 'Do you want to Delete this Bill?',
+			icon: 'warning',
+			buttons: [true, 'Yes'],
+			dangerMode: true,
+		}).then((willDelete) => {
+			if (willDelete) {
+				dispatch(startDeleteBill(id))
+				swal('Bill Deleted!', '', {
+					icon: 'success',
+				})
+			} else {
+				swal('Bill not deleted!', '', 'info')
+			}
+		})
+	}
+	return (
+		<div>
+			<Table className={classes.table} aria-label='simple table'>
+				<TableHead>
+					<TableRow>
+						<TableCell align='center'>
+							<Typography variant='h5'>Sl.NO</Typography>
+						</TableCell>
+						<TableCell align='center'>
+							<Typography variant='h5'>Customer</Typography>{' '}
+						</TableCell>
+						<TableCell align='center'>
+							<Typography variant='h5'>Total</Typography>
+						</TableCell>
+					</TableRow>
+				</TableHead>
+				<TableBody>
+					{sortedBills.map((data, i) => (
+						<TableRow key={data._id}>
+							<TableCell align='center'>
+								<Typography variant='h6'>{i + 1}</Typography>
+							</TableCell>
+							{customerData.map((ele) => {
+								return (
+									ele._id === data.customer && (
+										<TableCell key={data._id} align='center'>
+											<Typography variant='h6'>
+												{ele.name[0].toUpperCase() + ele.name.slice(1)}
+											</Typography>
+										</TableCell>
+									)
+								)
+							})}
 
-    const handleDelete = (id) => {
-        const confirm = window.confirm("Are you sure") 
-            if(confirm){
-                dispatch(startDeleteBill(id))           
-        }
-    }
+							<TableCell align='center'>
+								<Typography variant='h6'>{data.total}</Typography>
+							</TableCell>
 
-    return(
-        <div>
-            Total no of bills - {billing.length}
-            <table border = "1">
-                <thead>
-                    <tr>
-                        <th>Sl.No</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th></th>
-                        <th></th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    {billing.map((ele,i) => {
-                        return <tr key = {ele._id}>
-                            <td>{i+1}</td>
-                            {customers.map((data) => {
-                                return(
-                                    data._id === ele.customer && (
-                                        <td key = {data._id} >{data.name}</td>
-                                    )
-                                )
-                            })}
-                            <td>{ele.total}</td>
-                            <td><button onClick = {() => {
-                                handleInvoice(ele._id)
-                                dispatch(startGetBillData(ele._id))
-
-                            }} >View</button></td>
-                            <td><button onClick = {() => {
-                                handleDelete(ele._id)
-                            }} >Delete</button></td>
-                        </tr>
-                    })}
-                </tbody>
-            </table>
-        </div>
-    )
+							<TableCell align='center'>
+								<Button
+									color='primary'
+									variant='outlined'
+									onClick={() => {
+										handleInvoice(data._id)
+										dispatch(startGetBillData(data._id))
+									}}>
+									<Typography variant='h6'>View</Typography>
+								</Button>
+							</TableCell>
+							<TableCell align='center'>
+								<Button
+									color='secondary'
+									variant='outlined'
+									onClick={() => {
+										handleDelete(data._id)
+									}}>
+									<Typography variant='h6'>Delete</Typography>
+								</Button>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</div>
+	)
 }
 
 export default BillList

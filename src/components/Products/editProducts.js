@@ -3,7 +3,10 @@ import { useFormik } from 'formik'
 import * as yup from 'yup'
 import { makeStyles, Button, TextField, Typography } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import { startAddProduct } from '../../actions/productAction'
+import {
+	startEditProductsData,
+	clearProdData,
+} from '../../actions/productAction'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -22,13 +25,14 @@ const useStyles = makeStyles((theme) => ({
 	},
 }))
 
-const AddProducts = (props) => {
+const EditProducts = (props) => {
+	const { handleToggle, _id, name, price } = props
 	const dispatch = useDispatch()
 	const classes = useStyles()
 
 	const initialValues = {
-		name: '',
-		price: '',
+		name: name,
+		price: price,
 	}
 
 	const validationSchema = yup.object({
@@ -39,8 +43,9 @@ const AddProducts = (props) => {
 	})
 
 	const onSubmit = (values, onSubmitProps) => {
-		console.log(values)
-		dispatch(startAddProduct(values))
+		dispatch(startEditProductsData(_id, values))
+		handleToggle(false)
+
 		onSubmitProps.resetForm()
 	}
 
@@ -49,6 +54,7 @@ const AddProducts = (props) => {
 		validationSchema: validationSchema,
 		onSubmit: onSubmit,
 	})
+
 	return (
 		<div>
 			<form onSubmit={formik.handleSubmit}>
@@ -83,11 +89,22 @@ const AddProducts = (props) => {
 					color='primary'
 					variant='contained'
 					type='submit'>
-					<Typography variant='h6'>Add</Typography>
+					<Typography variant='h6'>Update</Typography>
+				</Button>
+				<Button
+					className={classes.button}
+					color='secondary'
+					variant='contained'
+					type='submit'
+					onClick={() => {
+						handleToggle(false)
+						dispatch(clearProdData())
+					}}>
+					<Typography variant='h6'>Cancel</Typography>
 				</Button>
 			</form>
 		</div>
 	)
 }
 
-export default AddProducts
+export default EditProducts

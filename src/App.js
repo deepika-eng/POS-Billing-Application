@@ -1,35 +1,25 @@
-import React,{useState,useEffect} from 'react'
-import {BrowserRouter} from "react-router-dom"
-import NavBar from './components/NavBar'
-import Typography from "@material-ui/core/Typography"
-import { Container } from '@material-ui/core'
- 
-const App = (props) => {
-  const [userLoggedIn, setUserLoggedIn] = useState(false)
+import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
+import Index from './components/home/Index'
+import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import './App.css'
 
-  const handleAuth = () => {
-    setUserLoggedIn(!userLoggedIn)
-  }
+const theme = createMuiTheme({
+	typography: {
+		fontFamily: 'Avenir',
+	},
+})
 
-  useEffect(() => {
-    if(localStorage.getItem('token')) {
-      handleAuth()
-    }
-  }, [])
-
-  return (
-    <Container>
-      <Typography 
-            variant = "h2"
-            color = "secondary"
-            align = "center"
-      >
-         Welcome to Billing </Typography>
-      <BrowserRouter>
-            <NavBar userLoggedIn={userLoggedIn} handleAuth= {handleAuth} />
-      </BrowserRouter>
-    </Container>
-  )
+const App = () => {
+	return (
+		<div>
+			<ThemeProvider theme={theme}>
+				<BrowserRouter>
+					<Index />
+				</BrowserRouter>
+			</ThemeProvider>
+		</div>
+	)
 }
 
 export default App
